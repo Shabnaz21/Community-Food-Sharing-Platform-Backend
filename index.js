@@ -7,7 +7,7 @@ const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0s8hpk2.mongodb.net/SharePlate?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -26,11 +26,30 @@ const foodCollection = client.db('SharePlate').collection('Foods')
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
+
+        app.post('/foods', async (req, res) => { 
+            const food = req.body;
+            const result = await foodCollection.insertOne(food);
+            res.send(result);
+        })
 
         app.get('/foods', async (req, res) => { 
             const foodFind = foodCollection.find();
             const result = await foodFind.toArray();
+            res.send(result);
+        })
+        app.get('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+
+            // const options = {
+            //     // Include only the `title` and `imdb` fields in the returned document
+            //     projection: { title: 1, price: 1, service_id: 1, img: 1 },
+            // };
+
+            const result = await foodCollection.findOne(query);
+            // console.log(result);
             res.send(result);
         })
 
