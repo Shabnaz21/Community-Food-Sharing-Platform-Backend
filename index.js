@@ -109,6 +109,27 @@ async function run() {
             res.send(result);
         })
 
+        app.patch('/food-request/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const UpdatedFoodData = req.body;
+            const updatedReq = {
+                $set: {
+                    status: UpdatedFoodData.status
+                },
+            };
+            const result = await RequestCollection.updateOne(filter, updatedReq)
+            res.send(result)
+        })
+
+        app.delete('/food-request/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = {
+                _id: new ObjectId(id),
+            };
+            const result = await RequestCollection.deleteOne(query);
+            res.send(result);
+        })
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
