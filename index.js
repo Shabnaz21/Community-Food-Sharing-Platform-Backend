@@ -21,13 +21,14 @@ const client = new MongoClient(uri, {
 
 // Connection Collection
 const foodCollection = client.db('SharePlate').collection('Foods')
+const RequestCollection = client.db('SharePlate').collection('RequestsFood')
 
 
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
-
+// All Foods
         app.post('/foods', async (req, res) => { 
             const food = req.body;
             const result = await foodCollection.insertOne(food);
@@ -42,6 +43,13 @@ async function run() {
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
+
+            //Request Part
+            app.post('/food-request', async (req, res) => {
+                const foods = req.body;
+                const result = await RequestCollection.insertOne(foods);
+                res.send(result);
+            })  
 
             // const options = {
             //     // Include only the `title` and `imdb` fields in the returned document
