@@ -42,26 +42,7 @@ async function run() {
             const result = await foodCollection.insertOne(food);
             res.send(result);
         })
-
-        app.get('/foods', async (req, res) => {
-            const foodFind = foodCollection.find();
-            const result = await foodFind.toArray();
-            res.send(result);
-        })
-        app.get('/foods/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-
-            // const options = {
-            //     // Include only the `title` and `imdb` fields in the returned document
-            //     projection: { title: 1, price: 1, service_id: 1, img: 1 },
-            // };
-
-            const result = await foodCollection.findOne(query);
-            // console.log(result);
-            res.send(result);
-        })
-
+        
         // sorting & Filtering
         // pagination
         app.get('/foods', async (req, res) => {
@@ -95,6 +76,19 @@ async function run() {
             });
         })
 
+        app.get('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+
+            // const options = {
+            //     // Include only the `title` and `imdb` fields in the returned document
+            //     projection: { title: 1, price: 1, service_id: 1, img: 1 },
+            // };
+
+            const result = await foodCollection.findOne(query);
+            // console.log(result);
+            res.send(result);
+        })
 
         //Request Part
         app.post('/food-request', async (req, res) => {
