@@ -1,5 +1,7 @@
 const express = require('express')
 require('dotenv').config()
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 5000;
@@ -13,6 +15,32 @@ app.use(cors(
     }
 ));
 app.use(express.json());
+app.use(cookieParser());
+
+// middlewares by myself
+
+const gateman = async (req, res, next) => {
+    console.log('called', req.host, req.originalUrl);
+    next();
+}
+
+// verify
+const verifyToken = (req, res, next) => {
+    const token = req.cookies?.token;
+    console.log('token in the middleware', token);
+    // no token
+    if (!token) {
+        return res.status(401).send({ message: 'unauthorized access' })
+    }
+    // jwt verify
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+            return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.user = decoded;
+        next();
+    })
+}
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.0s8hpk2.mongodb.net/SharePlate?retryWrites=true&w=majority`;
@@ -35,14 +63,33 @@ async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
         // await client.connect();
-        
+
+        // jwt
+
+        app.post('/jwt', async (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '1hr'})
+            res.
+                cookie('token', token, {
+                    httpOnly: true,
+                    sameSite: 'none',
+                    secure: true,
+                })
+                .send({ success: true })
+        })
+        // logout
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+        })
+
         // All Foods
         app.post('/foods', async (req, res) => {
             const food = req.body;
             const result = await foodCollection.insertOne(food);
             res.send(result);
         })
-        
+
         // sorting & Filtering
         // pagination
         app.get('/foods', async (req, res) => {
@@ -79,31 +126,32 @@ async function run() {
         app.get('/foods/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) }
-
-            // const options = {
-            //     // Include only the `title` and `imdb` fields in the returned document
-            //     projection: { title: 1, price: 1, service_id: 1, img: 1 },
-            // };
-
             const result = await foodCollection.findOne(query);
             // console.log(result);
             res.send(result);
         })
 
         //Request Part
-        app.post('/food-request', async (req, res) => {
+        app.post('/food-request', gateman,verifyToken, async (req, res) => {
             const foods = req.body;
             const result = await RequestCollection.insertOne(foods);
             res.send(result);
         })
 
-        app.get('/food-request', async (req, res) => {
-
-            const result = await RequestCollection.find().toArray();
+        app.get('/food-request', gateman, verifyToken,  async (req, res) => {
+            console.log('token owner info', req.user);
+            // if (req.user.email !== req.query.email) {
+            //     return res.status(403).send({ message: 'Forbidden access' })
+            // }
+            let query = {};
+            if (req.query?.email) {
+                query={email: req.query.email}
+            }
+            const result = await RequestCollection.find(query).toArray();
             res.send(result);
         })
 
-        app.patch('/food-request/:id', async (req, res) => {
+        app.patch('/food-request/:id', gateman, verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const UpdatedFoodData = req.body;
@@ -116,7 +164,7 @@ async function run() {
             res.send(result)
         })
 
-        app.delete('/food-request/:id', async (req, res) => {
+        app.delete('/food-request/:id', gateman, verifyToken, async (req, res) => {
             const id = req.params.id;
             const query = {
                 _id: new ObjectId(id),
