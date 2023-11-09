@@ -9,9 +9,9 @@ const port = process.env.PORT || 5000;
 app.use(cors(
     {
         origin: [
-            // 'https://share-plate-1d8b2.web.app',
-            // 'https://share-plate-1d8b2.firebaseapp.com'
-            'http://localhost:5173'
+            'https://share-plate-1d8b2.web.app',
+            'https://share-plate-1d8b2.firebaseapp.com'
+            // 'http://localhost:5173'
             
         ],
         credentials: true
