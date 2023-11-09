@@ -9,9 +9,9 @@ const port = process.env.PORT || 5000;
 app.use(cors(
     {
         origin: [
-            'https://share-plate-1d8b2.web.app',
-            'https://share-plate-1d8b2.firebaseapp.com'
-            // 'http://localhost:5173'
+            // 'https://share-plate-1d8b2.web.app',
+            // 'https://share-plate-1d8b2.firebaseapp.com'
+            'http://localhost:5173'
             
         ],
         credentials: true
@@ -111,15 +111,12 @@ async function run() {
         })
 
         app.get('/food-request',  async (req, res) => {
-            console.log('token owner info', req.user);
-            if (req.user.email !== req.query.email) {
-                return res.status(403).send({ message: 'Forbidden access' })
-            }
             let query = {};
             if (req.query?.email) {
                 query={email: req.query.email}
             }
-            const result = await RequestCollection.find(query).toArray();
+            console.log(query);
+            const result = await RequestCollection.find().toArray();
             res.send(result);
         })
 
