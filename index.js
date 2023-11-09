@@ -96,6 +96,20 @@ async function run() {
             // console.log(result);
             res.send(result);
         })
+
+        app.patch('/foods/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const UpdatedFoodData = req.body;
+            const updatedReq = {
+                $set: {
+                    status: UpdatedFoodData.status
+                },
+            };
+            const result = await foodCollection.updateOne(filter, updatedReq)
+            res.send(result)
+        })
+
         app.delete('/foods/:id', async (req, res) => {
             const id = req.params.id;
             const query = {
@@ -119,7 +133,6 @@ async function run() {
             if (req.query?.email) {
                 query={email: req.query.email}
             }
-            console.log(query);
             const result = await RequestCollection.find().toArray();
             res.send(result);
         })
