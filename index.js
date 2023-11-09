@@ -60,6 +60,7 @@ async function run() {
             const foodName = req.query.foodName;
             const sortField = req.query.sortField;
             const sortOrder = req.query.sortOrder;
+            const donatorEmail = req.query.donatorEmail;
 
             // pagination
             const page = Number(req.query.page);
@@ -75,7 +76,10 @@ async function run() {
             if (sortField && sortOrder) {
                 sortObj[sortField] = sortOrder
             }
- 
+            if (donatorEmail) {
+                queryObj.donatorEmail = donatorEmail;
+            }
+            
             const foodFind = foodCollection.find(queryObj).skip(skip).limit(limit).sort(sortObj);
             const result = await foodFind.toArray();
             const total = await foodCollection.countDocuments()
