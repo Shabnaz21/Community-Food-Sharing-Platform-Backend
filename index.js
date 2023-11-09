@@ -129,11 +129,18 @@ async function run() {
         })
 
         app.get('/food-request',  async (req, res) => {
-            let query = {};
-            if (req.query?.email) {
-                query={email: req.query.email}
+            let queryObj = {};
+            const foodName = req.query?.foodName;
+            const userEmail = req.query?.userEmail;
+
+            if (userEmail) {
+                queryObj.userEmail = userEmail
             }
-            const result = await RequestCollection.find().toArray();
+            if (foodName) {
+                queryObj.foodName = foodName
+            }
+
+            const result = await RequestCollection.find(queryObj).toArray();
             res.send(result);
         })
 
